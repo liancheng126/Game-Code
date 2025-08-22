@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>F1 Reaction Game</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: #111;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+    .lights {
+      display: flex;
+      gap: 10px;
+      margin: 20px;
+    }
+    .light {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #333;
+      border: 2px solid #555;
+    }
+    .light.on {
+      background: red;
+    }
+    #message {
+      margin-top: 20px;
+      font-size: 1.2em;
+    }
+    #history {
+      margin-top: 20px;
+      font-size: 0.9em;
+    }
+    #average, #best, #leaderboard {
+      margin-top: 10px;
+      font-size: 1em;
+    }
+    #average {
+      color: #0f0;
+    }
+    #best {
+      color: #ff0;
+    }
+    #leaderboard {
+      color: #0ff;
+    }
+  </style>
+</head>
+<body>
+  <h1>F1 Reaction Game</h1>
+  <div class="lights" id="lights">
+    <div class="light"></div>
+    <div class="light"></div>
+    <div class="light"></div>
+    <div class="light"></div>
+    <div class="light"></div>
+  </div>
+  <button id="startBtn">開始遊戲</button>
+  <div id="message"></div>
+  <div id="history"></div>
+  <div id="average"></div>
+  <div id="best"></div>
+  <div id="leaderboard"></div>
+
+  <script>
+    const startBtn = document.getElementById("startBtn");
+    const lights = document.querySelectorAll(".light");
+    const message = document.getElementById("message");
+    const historyDiv = document.getElementById("history");
+    const averageDiv = document.getElementById("average");
+    const bestDiv = document.getElementById("best");
+    const leaderboardDiv = document.getElementById("leaderboard");
+
+    let startTime;
+    let waiting = false;
+    let results = [];
+
+    function resetLights() {
+      lights.forEach(light => light.classList.remove("on"));
+    }
+
+    function startGame() {
+      resetLights();
+      message.textContent = "燈號準備中... 請等待";
+      startBtn.disabled = true;
+      let i = 0;
+
+      let interval = setInterval(() => {
+        if (i < lights.length) {
+          lights[i].classList.add("on");
+          i++;
+        } else {
+          clearInterval(interval);
+          setTimeout(() => {
+            resetLights();
+            message.textContent = "燈號熄滅！快按下空白鍵或點擊螢幕！";
+            startTime = Date.now();
+            waiting = true;
+          }, Math.random() * 2000 + 1000); // 1~3秒隨機熄滅
+        }
+      }, 600);
+    }
+
+    function endGame() {
+      if (!waiting) return;
+      let reaction = Date.now() - startTime;
+      waiting = false;
+      results.push(reaction);
+      message.textContent = `你的反應時間: ${reaction} ms - ${getComment(reaction)}`;
+      updateHistory();
+      updateAverage();
+      updateBest();
+      updateLeaderboard();
+      startBtn.disabled = false;
+    }
+
+    function getComment(ms) {
+      if (ms < 200) return "你有成為賽車手的潛力!!";
+      if (ms < 300) return "不錯！反應很快！";
+      if (ms < 400) return "普通水準，加油！";
+      if (ms < 600) return "稍慢了，要更專注！";
+      return "太慢了，再試一次！";
+    }
+
+    function updateHistory() {
+      historyDiv.innerHTML = "<b>歷史紀錄:</b><br>" + results.map((r,i)=> `第${i+1}次: ${r} ms`).join("<br>");
+    }
+
+    function updateAverage() {
+      let sum = results.reduce((a,b)=>a+b,0);
+      let avg = Math.round(sum / results.length);
+      averageDiv.textContent = `平均反應時間: ${avg} ms`;
+    }
+
+    function updateBest() {
+      let best = Math.min(...results);
+      bestDiv.textContent = `最佳反應時間: ${best} ms`;
+    }
+
+    function updateLeaderboard() {
+      let sorted = [...results].sort((a,b)=>a-b).slice(0,3);
+      leaderboardDiv.innerHTML = "<b>排行榜 (前3名):</b><br>" + sorted.map((r,i)=> `第${i+1}名: ${r} ms`).join("<br>");
+    }
+
+    startBtn.addEventListener("click", startGame);
+    document.body.addEventListener("keydown", e => { if (e.code === "Space") endGame(); });
+    document.body.addEventListener("click", endGame);
+  </script>
+</body>
+</html>

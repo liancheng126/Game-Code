@@ -10,13 +10,15 @@
       align-items: center;
       justify-content: center;
       height: 100vh;
-      background: #111;
+      background: url('https://i.imgur.com/84zZf6N.jpg') no-repeat center center/cover;
       color: #fff;
       font-family: Arial, sans-serif;
       text-align: center;
     }
     .lights {
-      display: flex;
+      display: grid;
+      grid-template-columns: repeat(5, 50px);
+      grid-template-rows: repeat(5, 50px);
       gap: 10px;
       margin: 20px;
     }
@@ -33,6 +35,7 @@
     #message {
       margin-top: 20px;
       font-size: 1.2em;
+      text-shadow: 2px 2px 4px #000;
     }
     #history {
       margin-top: 20px;
@@ -51,36 +54,59 @@
     #leaderboard {
       color: #0ff;
     }
+    #nicknameInput {
+      margin-bottom: 15px;
+      padding: 5px;
+      font-size: 1em;
+    }
+    #shareBtn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 1em;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
   <h1>F1 Reaction Game</h1>
-  <div class="lights" id="lights">
-    <div class="light"></div>
-    <div class="light"></div>
-    <div class="light"></div>
-    <div class="light"></div>
-    <div class="light"></div>
-  </div>
+  <input type="text" id="nicknameInput" placeholder="輸入你的暱稱" />
+  <div class="lights" id="lights"></div>
   <button id="startBtn">開始遊戲</button>
   <div id="message"></div>
   <div id="history"></div>
   <div id="average"></div>
   <div id="best"></div>
   <div id="leaderboard"></div>
+  <button id="shareBtn" style="display:none;">分享成績</button>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script>
     const startBtn = document.getElementById("startBtn");
-    const lights = document.querySelectorAll(".light");
+    const lightsContainer = document.getElementById("lights");
     const message = document.getElementById("message");
     const historyDiv = document.getElementById("history");
     const averageDiv = document.getElementById("average");
     const bestDiv = document.getElementById("best");
     const leaderboardDiv = document.getElementById("leaderboard");
+    const shareBtn = document.getElementById("shareBtn");
+    const nicknameInput = document.getElementById("nicknameInput");
 
     let startTime;
     let waiting = false;
     let results = [];
+    let lights = [];
+
+    // 動態建立 5x5 燈號
+    function createLights() {
+      lightsContainer.innerHTML = "";
+      lights = [];
+      for (let i = 0; i < 25; i++) {
+        let div = document.createElement("div");
+        div.classList.add("light");
+        lightsContainer.appendChild(div);
+        lights.push(div);
+      }
+    }
 
     function resetLights() {
       lights.forEach(light => light.classList.remove("on"));
@@ -105,7 +131,7 @@
             waiting = true;
           }, Math.random() * 2000 + 1000); // 1~3秒隨機熄滅
         }
-      }, 600);
+      }, 150);
     }
 
     function endGame() {
@@ -113,11 +139,13 @@
       let reaction = Date.now() - startTime;
       waiting = false;
       results.push(reaction);
-      message.textContent = `你的反應時間: ${reaction} ms - ${getComment(reaction)}`;
+      let nickname = nicknameInput.value || "玩家";
+      message.textContent = `${nickname} 的反應時間: ${reaction} ms - ${getComment(reaction)}`;
       updateHistory();
       updateAverage();
       updateBest();
       updateLeaderboard();
+      shareBtn.style.display = "inline-block";
       startBtn.disabled = false;
     }
 
@@ -146,12 +174,26 @@
 
     function updateLeaderboard() {
       let sorted = [...results].sort((a,b)=>a-b).slice(0,3);
-      leaderboardDiv.innerHTML = "<b>排行榜 (前3名):</b><br>" + sorted.map((r,i)=> `第${i+1}名: ${r} ms`).join("<br>");
+      const titles = ["閃電手 ⚡", "飛車手 🏎️", "賽道王 🏁"];
+      leaderboardDiv.innerHTML = "<b>排行榜 (前3名):</b><br>" + sorted.map((r,i)=> `第${i+1}名 (${titles[i]}): ${r} ms`).join("<br>");
     }
+
+    shareBtn.addEventListener("click", () => {
+      let nickname = nicknameInput.value || "玩家";
+      html2canvas(document.body, {width:1280, height:720}).then(canvas => {
+        let link = document.createElement("a");
+        link.download = `${nickname}_reaction_result.png`;
+        link.href = canvas.toDataURL();
+        link.click();
+      });
+    });
 
     startBtn.addEventListener("click", startGame);
     document.body.addEventListener("keydown", e => { if (e.code === "Space") endGame(); });
     document.body.addEventListener("click", endGame);
+
+    // 初始化建立燈號
+    createLights();
   </script>
 </body>
 </html>

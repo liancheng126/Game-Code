@@ -5,38 +5,57 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Game Code｜遊戲選單</title>
   <style>
-    body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;margin:0;background:#0f1220;color:#e9ecf1}
-    .wrap{max-width:920px;margin:0 auto;padding:28px}
-    h1{margin:0 0 6px}
-    p{margin:0 0 18px;color:#a8b0c0}
+    :root{--bg:#0f1220;--card:#151a2e;--border:#2a2f45;--text:#e9ecf1;--muted:#93a0b6;--accent:#7dd3fc}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:radial-gradient(1200px 600px at 70% -10%, #1b2250 0%, #0f1220 60%), var(--bg);color:var(--text)}
+    .wrap{max-width:1000px;margin:0 auto;padding:28px 20px 40px}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+    .brand{font-weight:800;letter-spacing:.4px;font-size:22px}
+    .creator{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 12px;border:1px solid rgba(255,255,255,.08);border-radius:999px;
+      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.03);
+      font-size:14px;color:var(--text);white-space:nowrap
+    }
+    .creator .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent)}
+    p.sub{margin:0 0 18px;color:var(--muted)}
     ul{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
-    a.item{display:block;padding:16px 18px;border:1px solid #2a2f45;border-radius:14px;text-decoration:none;color:inherit;background:#151a2e}
-    a.item:hover{border-color:#7dd3fc;box-shadow:0 6px 18px rgba(0,0,0,.35);transform:translateY(-2px)}
-    .hint{margin-top:22px;font-size:14px;color:#93a0b6}
-    code{background:#0e1222;border:1px solid #2a2f45;border-radius:6px;padding:2px 6px}
+    a.item{display:block;padding:16px 18px;border:1px solid var(--border);border-radius:14px;text-decoration:none;color:inherit;background:var(--card)}
+    a.item:hover{border-color:var(--accent);box-shadow:0 6px 18px rgba(0,0,0,.35);transform:translateY(-2px)}
+    .hint{margin-top:22px;font-size:14px;color:var(--muted)}
+    code{background:#0e1222;border:1px solid var(--border);border-radius:6px;padding:2px 6px}
+    footer{margin-top:26px;color:var(--muted);font-size:12px;text-align:center}
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>Game Code</h1>
-    <p>選擇一款遊戲開始。</p>
+    <header>
+      <div class="brand">Game Code</div>
+      <!-- ⭐ 創作者標籤 -->
+      <div class="creator"><span class="dot"></span>創作者：<strong>LIAN CHENG</strong></div>
+    </header>
+
+    <p class="sub">選擇一款遊戲開始。</p>
 
     <ul>
+      <!-- 你的 F1 遊戲（資料夾名稱：F1-Reaction-Game） -->
+      <li><a class="item" href="./F1-Reaction-Game/">🏁 F1 Reaction Game</a></li>
 
-      <li><a class="item" href="./F1-Reaction-Game/index.html">
-        🏁 F1 Reaction Game
-      </a></li>
-
-      
+      <!-- 範例入口：建立這些資料夾後就能用 -->
       <li><a class="item" href="./snake/">🐍 Snake（建立 snake/index.html 後可用）</a></li>
       <li><a class="item" href="./pong/">🏓 Pong（建立 pong/index.html 後可用）</a></li>
     </ul>
 
     <div class="hint">
+      建議資料夾用小寫與連字號，例如 <code>f1-reaction-game</code>、<code>snake</code>。每個遊戲資料夾裡都要有 <code>index.html</code> 才能直接開啟。
     </div>
+
+    <footer>© <span id="y"></span> Game Code • GitHub Pages</footer>
   </div>
+
+  <script>
+    document.getElementById('y').textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>
-
-
-

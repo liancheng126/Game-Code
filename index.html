@@ -1,46 +1,46 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Game Code｜遊戲選單</title>
   <style>
-    :root{
-      --bg:#0f1220; --card:#171a2b; --muted:#9aa0b4; --text:#e9ecf1; --accent:#7dd3fc;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0; font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial;
-      color:var(--text); background: radial-gradient(1200px 600px at 70% -10%, #1b2250 0%, #0f1220 60%), var(--bg);
-      min-height:100dvh; display:flex; flex-direction:column;
-    }
-    header{
-      padding:28px 20px; max-width:1100px; width:100%; margin:0 auto;
-      display:flex; align-items:center; justify-content:space-between; gap:16px;
-    }
-    .brand{font-weight:800; letter-spacing:.5px; font-size:20px}
-    .sub{color:var(--muted); font-size:14px}
-    main{max-width:1100px; width:100%; margin:0 auto; padding:0 20px 40px}
-    .grid{
-      display:grid; grid-template-columns:repeat(1,minmax(0,1fr)); gap:16px;
-    }
-    @media (min-width:640px){ .grid{ grid-template-columns:repeat(2,1fr);} }
-    @media (min-width:960px){ .grid{ grid-template-columns:repeat(3,1fr);} }
-    .card{
-      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
-      border:1px solid rgba(255,255,255,.06); border-radius:18px; padding:18px;
-      transition:.2s transform ease, .2s box-shadow ease, .2s border-color ease;
-      text-decoration:none; color:inherit; display:block; height:100%;
-    }
-    .card:hover{transform:translateY(-3px); border-color:rgba(125,211,252,.6); box-shadow:0 10px 24px rgba(0,0,0,.35);}
-    .thumb{
-      height:150px; border-radius:12px; margin-bottom:12px; display:flex; align-items:center; justify-content:center;
-      background: conic-gradient(from 210deg at 60% 20%, #334155, #1f2937, #0f172a, #111827);
-      border:1px solid rgba(255,255,255,.08);
-      font-size:48px;
-    }
-    h3{margin:0 0 6px 0; font-size:18px}
-    p{margin:0; color:var(--muted); font-size:14px}
-    footer{margin-top:auto; padding:20px; text-align:center; color:var(--muted); font-size:12px}
-    .tag{
-      display:inline-block; font-size:12px; color:#0a0a0a; backgroun
+    body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;margin:0;background:#0f1220;color:#e9ecf1}
+    .wrap{max-width:920px;margin:0 auto;padding:28px}
+    h1{margin:0 0 6px}
+    p{margin:0 0 18px;color:#a8b0c0}
+    ul{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+    a.item{display:block;padding:16px 18px;border:1px solid #2a2f45;border-radius:14px;text-decoration:none;color:inherit;background:#151a2e}
+    a.item:hover{border-color:#7dd3fc;box-shadow:0 6px 18px rgba(0,0,0,.35);transform:translateY(-2px)}
+    .hint{margin-top:22px;font-size:14px;color:#93a0b6}
+    code{background:#0e1222;border:1px solid #2a2f45;border-radius:6px;padding:2px 6px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Game Code</h1>
+    <p>選擇一款遊戲開始。</p>
+
+    <ul>
+      <!-- ✅ 情況 A：F1 目錄內有 index.html -->
+      <li><a class="item" href="./F1%20Reaction%20Game/">
+        🏁 F1 Reaction Game（目錄內是 index.html）
+      </a></li>
+
+      <!-- ✅ 情況 B：F1 主檔不是 index.html（請把 game.html 換成你的實際檔名） -->
+      <li><a class="item" href="./F1%20Reaction%20Game/game.html">
+        🏁 F1 Reaction Game（主檔非 index.html → 改這裡的檔名）
+      </a></li>
+
+      <!-- 你之後可以照這個格式多加幾個遊戲 -->
+      <li><a class="item" href="./snake/">🐍 Snake（建立 snake/index.html 後可用）</a></li>
+      <li><a class="item" href="./pong/">🏓 Pong（建立 pong/index.html 後可用）</a></li>
+    </ul>
+
+    <div class="hint">
+      小提醒：如果資料夾名稱含空白，網址必須用 <code>%20</code>。<br/>
+      建議把資料夾改名成 <code>f1-reaction-game</code>，然後把連結改成 <code>./f1-reaction-game/</code>，會更乾淨。
+    </div>
+  </div>
+</body>
+</html>

@@ -1,1 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>F1 Reaction Game</title>
+  <style>
+    :root{ --glass: rgba(0,0,0,.55); }
+    *{ box-sizing: border-box; }
+    body{
+      margin:0; padding:0;
+      display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+      min-height:100vh;
+      background:url('https://tse2.mm.bing.net/th/id/OIP.dAkJCNoqGuYsy2vao-Lw6wHaE8?pid=Api') no-repeat center/cover;
+      font-family: Arial, system-ui, -apple-system, Segoe UI, PingFang TC, sans-serif;
+      color:#fff; text-align:center;
+    }
+    h1{ margin:18px 0 8px; text-shadow:0 3px 10px #000; }
+    .panel{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:center; background:var(--glass); padding:10px 12px; border-radius:12px; }
+    select, button, input{ padding:8px 10px; border-radius:8px; border:none; }
+
+    /* 吊掛式燈號區 */
+    .lights{ display:flex; flex-direction:row; gap:12px; margin:16px 0; padding:16px; background:var(--glass); border-radius:12px; }
+    .col{ display:flex; flex-direction:column; gap:12px; }
+    .light{ width:44px; height:44px; border-radius:50%; background:#333; border:2px solid #555; box-shadow:0 0 8px #000 inset; transition:background .12s, box-shadow .12s; }
+    .light.on{ background:#e10600; box-shadow:0 0 16px #ff2a2a; }
+    .light.go{ background:#00d26a; box-shadow:0 0 18px #00ff8a; }
+
+    #message{ min-height:28px; text-shadow:0 2px 6px #000; }
+
+    /* 資訊板 */
+    #boards{ width:min(1100px,95vw); display:grid; grid-template-columns:repeat(3,minmax(220px,1fr)); gap:12px; }
+    #history, #average, #best, #leaderboard, #tripleSummary, #rankList{
+      background:var(--glass); padding:12px; border-radius:10px; text-align:left;
+    }
+    #average{ color:#8dffa6; } #best{ color:#ffe66d; } #leaderboard{ color:#8feaff; }
+    .fs{ color:#ff6b6b; font-weight:700; }
+
+    /* 分享圖卡樣式 */
+    #shareCardWrapper{ position:absolute; left:-99999px; top:0; }
+    .share-card{ position:relative; width:1080px; height:1920px; display:flex; flex-direction:column; justify-content:space-between; color:#fff; padding:60px; background-image:inherit; background-position:center; background-size:cover; }
+    .share-top{ display:flex; align-items:center; gap:20px; }
+    .share-lights{ display:flex; gap:10px; }
+    .share-light{ width:40px; height:40px; border-radius:50%; background:#e10600; box-shadow:0 0 12px rgba(255,0,0,.85); border:2px solid #550000; }
+    .share-title{ font-size:56px; font-weight:800; text-shadow:2px 2px 8px #000; }
+    .share-mid{ background:rgba(0,0,0,.5); padding:30px; border-radius:18px; }
+    .share-big{ font-size:120px; font-weight:900; line-height:1.1; }
+    .share-sub{ font-size:34px; opacity:.95; }
+    .share-rank{ font-size:40px; margin-top:10px; }
+    .ranklist-box{ background:rgba(0,0,0,.35); padding:20px; border-radius:14px; margin-top:20px; font-size:28px; line-height:1.6; }
+    .share-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:20px; }
+    .share-box{ background:rgba(255,255,255,.06); padding:16px 20px; border-radius:14px; }
+    .share-foot{ display:flex; justify-content:space-between; align-items:flex-end; font-size:28px; opacity:.9; gap:12px; flex-wrap:wrap; }
+    .checker{ height:40px; background:repeating-linear-gradient(90deg,#fff 0 40px,#000 40px 80px); border-radius:10px; flex:1; }
+  </style>
+</head>
+<body>
+  <h1>F1 Reaction Game</h1>
+
+  <div class="panel">
+    <input type="text" id="nicknameInput" placeholder="輸入你的暱稱" />
+    <label>難度：
+      <select id="difficulty">
+        <option value="easy">簡單</option>
+        <option value="normal" selected>普通</option>
+        <option value="hard">困難</option>
+      </select>
+    </label>
+    <label>分享尺寸：
+      <select id="shareSize">
+        <option value="1080x1920" selected>IG 限時動態 (1080×1920)</option>
+        <option value="1080x1350">IG/脆 貼文 4:5 (1080×1350)</option>
+        <option value="1080x1080">正方形 1:1 (1080×1080)</option>
+      </select>
+    </label>
+    <button id="startBtn">開始遊戲</button>
+    <button id="tripleBtn">三連挑戰</button>
+    <button id="shareBtn" style="display:none;">分享成績</button>
+    <button id="resetBtn" title="清除本地成績">清除資料</button>
+  </div>
+
+  <div class="lights" id="lights"></div>
+  <div id="message"></div>
+
+  <div id="boards">
+    <div id="history"></div>
+    <div id="average"></div>
+    <div id="best"></div>
+    <div id="leaderboard"></div>
+    <div id="tripleSummary"></div>
+    <div id="rankList"></div>
+  </div>
+
+  <!-- 隱藏的分享卡片容器 -->
+  <div id="shareCardWrapper"></div>
+
+  <!-- 音效 -->
+  <audio id="startSound" src="https://actions.google.com/sounds/v1/transportation/car_engine_start.ogg" preload="auto"></audio>
+  <audio id="goSound" src="https://actions.google.com/sounds/v1/transportation/race_car_passing.ogg" preload="auto"></audio>
+  <audio id="falseStartSound" src="https://actions.google.com/sounds/v1/cartoon/metal_clang.ogg" preload="auto"></audio>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script>
+    // ======== DOM 參照 ========
+    const lightsContainer = document.getElementById('lights');
+    const message = document.getElementById('message');
+    const historyDiv = document.getElementById('history');
+    const averageDiv = document.getElementById('average');
+    const bestDiv = document.getElementById('best');
+    const leaderboardDiv = document.getElementById('leaderboard');
+    const tripleSummary = document.getElementById('tripleSummary');
+    const rankListDiv = document.getElementById('rankList');
+
+    const nicknameInput = document.getElementById('nicknameInput');
+    const difficultySel = document.getElementById('difficulty');
+    const startBtn = document.getElementById('startBtn');
+    const tripleBtn = document.getElementById('tripleBtn');
+    const shareBtn = document.getElementById('shareBtn');
+    const resetBtn = document.getElementById('resetBtn');
+
+    const shareSizeSel = document.getElementById('shareSize');
+    const shareCardWrapper = document.getElementById('shareCardWrapper');
+
+    const startSound = document.getElementById('startSound');
+    const goSound = document.getElementById('goSound');
+    const falseStartSound = document.getElementById('falseStartSound');
+
+    // ======== 遊戲狀態 ========
+    let results = [];         // 有效成績 (ms)
+    let attempts = [];        // { type:'time'|'fs', value?:ms }
+
+    let waiting = false;      // true = 已經 GO，可結算
+    let gameActive = false;   // true = 燈號流程中，可判搶跑
+
+    let columns = [];         // 5 列 × 每列 4 燈
+
+    // 三連挑戰
+    let tripleMode = false;
+    let tripleBuffer = [];
+
+    // 計時器 IDs
+    let buildInterval = null, preGoTimeout = null, flashInterval = null;
+
+    // 難度參數
+    const DIFF = {
+      easy:   { colInterval: 1000, delayMin: 1000, delayMax: 3000 },
+      normal: { colInterval: 700,  delayMin: 800,  delayMax: 2000 },
+      hard:   { colInterval: 500,  delayMin: 500,  delayMax: 1500 }
+    };
+
+    // LocalStorage
+    const LS_KEY = 'f1rx_data_v2';
+
+    function loadLocal(){
+      try{
+        const raw = localStorage.getItem(LS_KEY); if(!raw) return;
+        const obj = JSON.parse(raw);
+        results = Array.isArray(obj.results)? obj.results: [];
+        attempts = Array.isArray(obj.attempts)? obj.attempts: [];
+        if (obj.nickname) nicknameInput.value = obj.nickname;
+        if (obj.difficulty && DIFF[obj.difficulty]) difficultySel.value = obj.difficulty;
+      }catch(e){}
+    }
+    function saveLocal(){
+      const obj = { results, attempts, nickname: nicknameInput.value||'', difficulty: difficultySel.value };
+      localStorage.setItem(LS_KEY, JSON.stringify(obj));
+    }
+
+    // ======== 段位/評語 ========
+    function getComment(ms){
+      if (ms < 200) return '你有成為賽車手的潛力!!';
+      if (ms < 300) return '不錯！反應很快！';
+      if (ms < 400) return '普通水準，加油！';
+      if (ms < 600) return '稍慢了，要更專注！';
+      return '太慢了，再試一次！';
+    }
+    function getRank(ms){
+      if (ms < 200) return { title:'閃電手', badge:'⚡' };
+      if (ms < 300) return { title:'飛車手', badge:'🏎️' };
+      if (ms < 400) return { title:'專注者', badge:'🎯' };
+      if (ms < 600) return { title:'新手', badge:'🚦' };
+      return { title:'慢半拍', badge:'🐢' };
+    }
+    function updateRankList(){
+      rankListDiv.innerHTML = `<b>段位列表：</b><br>
+      ⚡ 閃電手：<200ms<br>
+      🏎️ 飛車手：200–299ms<br>
+      🎯 專注者：300–399ms<br>
+      🚦 新手：400–599ms<br>
+      🐢 慢半拍：≥600ms`;
+    }
+
+    // ======== UI 板更新 ========
+    function updateHistory(){
+      const lines = attempts.map((a,i)=> a.type==='fs' ? `第${i+1}次：<span class="fs">搶跑</span>` : `第${i+1}次：${a.value} ms`);
+      historyDiv.innerHTML = `<b>歷史紀錄:</b><br>${lines.join('<br>')}`;
+    }
+    function updateAverage(){
+      if (!results.length){ averageDiv.textContent = '平均反應時間: -'; return; }
+      const avg = Math.round(results.reduce((a,b)=>a+b,0) / results.length);
+      averageDiv.textContent = `平均反應時間: ${avg} ms`;
+    }
+    function updateBest(){
+      if (!results.length){ bestDiv.textContent = '最佳反應時間: -'; return; }
+      const best = Math.min(...results);
+      bestDiv.textContent = `最佳反應時間: ${best} ms`;
+    }
+    function updateLeaderboard(){
+      if (!results.length){ leaderboardDiv.textContent = '排行榜 (前3名): -'; return; }
+      const sorted = [...results].sort((a,b)=>a-b).slice(0,3);
+      const titles = ['閃電手 ⚡','飛車手 🏎️','賽道王 🏁'];
+      leaderboardDiv.innerHTML = '<b>排行榜 (前3名):</b><br>' + sorted.map((r,i)=>`第${i+1}名 (${titles[i]||''}): ${r} ms`).join('<br>');
+    }
+    function updateAll(){ updateHistory(); updateAverage(); updateBest(); updateLeaderboard(); }
+
+    // ======== 燈號建立/重置 ========
+    function createLights(){
+      lightsContainer.innerHTML='';
+      columns = [];
+      for (let c=0;c<5;c++){
+        const colDiv = document.createElement('div'); colDiv.className='col';
+        const colLights = [];
+        for (let r=0;r<4;r++){
+          const d = document.createElement('div'); d.className='light';
+          colDiv.appendChild(d); colLights.push(d);
+        }
+        lightsContainer.appendChild(colDiv); columns.push(colLights);
+      }
+    }
+    function resetLights(){ columns.forEach(col=>col.forEach(l=>l.classList.remove('on','go'))); }
+    function clearTimers(){
+      if (buildInterval){ clearInterval(buildInterval); buildInterval=null; }
+      if (preGoTimeout){ clearTimeout(preGoTimeout); preGoTimeout=null; }
+      if (flashInterval){ clearInterval(flashInterval); flashInterval=null; }
+    }
+
+    // ======== 流程控制 ========
+    function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
+    function startGame(mode='single'){
+      // 防抖
+      startBtn.disabled = true; tripleBtn.disabled = true;
+
+      clearTimers(); resetLights();
+      message.textContent = '燈號準備中... 請等待';
+      startSound.currentTime=0; startSound.play();
+
+      const diff = DIFF[difficultySel.value] || DIFF.normal;
+      waiting = false; gameActive = true; tripleMode = (mode==='triple');
+      if (tripleMode && !tripleBuffer.length){
+        tripleSummary.innerHTML = '<b>三連挑戰：</b>進行中 (0/3)';
+      }
+
+      let colIdx = 0;
+      buildInterval = setInterval(()=>{
+        if (colIdx < columns.length){
+          columns[colIdx].forEach(l=>l.classList.add('on'));
+          colIdx++;
+        }else{
+          clearInterval(buildInterval); buildInterval=null;
+          const delay = randInt(diff.delayMin, diff.delayMax);
+          preGoTimeout = setTimeout(()=>{
+            resetLights();
+            columns.forEach(col=>col.forEach(l=>l.classList.add('go')));
+            message.textContent = 'GO！快按下空白鍵或點擊螢幕！';
+            goSound.currentTime=0; goSound.play();
+            startTime = Date.now(); waiting = true;
+            // 綠燈閃爍（視覺）
+            flashInterval = setInterval(()=>{
+              columns.forEach(col=>col.forEach(l=>l.classList.toggle('go')));
+            }, 280);
+            setTimeout(()=>{ clearInterval(flashInterval); flashInterval=null; }, 2000);
+          }, delay);
+        }
+      }, diff.colInterval);
+    }
+
+    function endGame(){
+      if (!waiting) return; // 尚未 GO
+      const reaction = Date.now() - startTime;
+      waiting=false; gameActive=false;
+      results.push(reaction); attempts.push({type:'time', value:reaction});
+
+      const nickname = nicknameInput.value || '玩家';
+      message.textContent = `${nickname} 的反應時間: ${reaction} ms - ${getComment(reaction)}`;
+
+      // 三連模式
+      if (tripleMode){
+        tripleBuffer.push(reaction);
+        const done = tripleBuffer.length;
+        if (done < 3){
+          tripleSummary.innerHTML = `<b>三連挑戰：</b>進行中 (${done}/3)，請繼續！`;
+          setTimeout(()=> startGame('triple'), 900);
+        }else{
+          const sum = tripleBuffer.reduce((a,b)=>a+b,0);
+          const avg = Math.round(sum/3);
+          const best = Math.min(...tripleBuffer);
+          const remark = getComment(avg);
+          tripleSummary.innerHTML = `<b>三連挑戰完成！</b><br>三次：${tripleBuffer.join(' / ')} ms<br>平均：${avg} ms，最佳：${best} ms<br>總評：${remark}`;
+          tripleBuffer=[]; tripleMode=false; startBtn.disabled=false; tripleBtn.disabled=false;
+        }
+      }else{
+        startBtn.disabled=false; tripleBtn.disabled=false;
+      }
+
+      shareBtn.style.display='inline-block';
+      updateAll(); saveLocal();
+    }
+
+    function falseStart(){
+      if (!gameActive || waiting) return; // 非燈號期或已 GO 不算
+      falseStartSound.currentTime=0; falseStartSound.play();
+      clearTimers(); resetLights(); waiting=false; gameActive=false;
+      attempts.push({type:'fs'});
+      message.innerHTML = `<span class="fs">搶跑！此輪不計入成績，請重新開始。</span>`;
+      if (tripleMode){ tripleBuffer=[]; tripleSummary.innerHTML = '<b>三連挑戰：</b>搶跑，已重置 (0/3)'; }
+      startBtn.disabled=false; tripleBtn.disabled=false;
+      updateHistory(); saveLocal();
+    }
+
+    // ======== 分享圖卡 ========
+    function parseSize(v){ const [w,h]=v.split('x').map(n=>parseInt(n,10)); return {w,h}; }
+    function buildShareCard({w,h}){
+      const nickname = nicknameInput.value || '玩家';
+      const last = attempts.length && attempts[attempts.length-1].type==='time' ? attempts[attempts.length-1].value : null;
+      const avgText = averageDiv.textContent.replace('平均反應時間: ','');
+      const bestText = bestDiv.textContent.replace('最佳反應時間: ','');
+      const top3 = (results.length? [...results].sort((a,b)=>a-b).slice(0,3):[]).map((r,i)=>`#${i+1} ${r}ms`).join('  ');
+      const today = new Date();
+      const dateStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+      const comment = last? getComment(last):'';
+      const rank = last? getRank(last):{title:'',badge:''};
+
+      shareCardWrapper.innerHTML='';
+      const card = document.createElement('div'); card.className='share-card';
+      card.style.width=w+'px'; card.style.height=h+'px';
+      card.style.backgroundImage = getComputedStyle(document.body).backgroundImage;
+
+      const top = document.createElement('div'); top.className='share-top';
+      const lights = document.createElement('div'); lights.className='share-lights';
+      for(let i=0;i<5;i++){ const d=document.createElement('div'); d.className='share-light'; lights.appendChild(d); }
+      const title = document.createElement('div'); title.className='share-title'; title.textContent='F1 反應速度訓練';
+      top.appendChild(lights); top.appendChild(title);
+
+      const mid = document.createElement('div'); mid.className='share-mid';
+      const big = document.createElement('div'); big.className='share-big'; big.textContent = last? `${last} ms` : '—';
+      const sub = document.createElement('div'); sub.className='share-sub'; sub.textContent = `${nickname}｜平均 ${avgText}｜最佳 ${bestText}`;
+      const rankEl = document.createElement('div'); rankEl.className='share-rank'; rankEl.innerHTML = `${rank.badge} ${rank.title}`;
+      const cmt = document.createElement('div'); cmt.className='share-sub'; cmt.textContent = comment;
+
+      const grid = document.createElement('div'); grid.className='share-grid';
+      const b1 = document.createElement('div'); b1.className='share-box'; b1.innerHTML = `<b>排行榜前 3</b><br>${top3||'—'}`;
+      const b2 = document.createElement('div'); b2.className='share-box'; b2.innerHTML = `<b>模式 / 難度</b><br>${difficultySel.options[difficultySel.selectedIndex].text}`;
+      grid.appendChild(b1); grid.appendChild(b2);
+
+      const rankListBox = document.createElement('div'); rankListBox.className='ranklist-box';
+      rankListBox.innerHTML = `<b>段位列表：</b><br>
+        ⚡ 閃電手：<200ms<br>
+        🏎️ 飛車手：200–299ms<br>
+        🎯 專注者：300–399ms<br>
+        🚦 新手：400–599ms<br>
+        🐢 慢半拍：≥600ms`;
+
+      mid.appendChild(big); mid.appendChild(sub); mid.appendChild(rankEl); mid.appendChild(cmt); mid.appendChild(grid); mid.appendChild(rankListBox);
+
+      const foot = document.createElement('div'); foot.className='share-foot';
+      const flag = document.createElement('div'); flag.className='checker';
+      const dateEl = document.createElement('div'); dateEl.textContent = dateStr;
+      foot.appendChild(flag); foot.appendChild(dateEl);
+
+      card.appendChild(top); card.appendChild(mid); card.appendChild(foot);
+      shareCardWrapper.appendChild(card);
+      return card;
+    }
+    function downloadCard(node, filename, {w,h}){
+      html2canvas(node, {width:w, height:h, windowWidth:w, windowHeight:h, backgroundColor:null, scale:1}).then(canvas=>{
+        const link=document.createElement('a'); link.download=filename; link.href=canvas.toDataURL('image/png'); link.click();
+      });
+    }
+
+    // ======== 事件繫結 ========
+    function clickIsControl(target){
+      return [startBtn,tripleBtn,shareBtn,resetBtn,difficultySel,nicknameInput,shareSizeSel].some(el=> el && (target===el || el.contains(target)) );
+    }
+
+    startBtn.addEventListener('click', ()=> startGame('single'));
+    tripleBtn.addEventListener('click', ()=>{ tripleBuffer=[]; tripleMode=true; startGame('triple'); });
+    resetBtn.addEventListener('click', ()=>{
+      if (!confirm('確定要清除本地成績與歷史嗎？')) return;
+      results=[]; attempts=[]; tripleBuffer=[]; tripleMode=false; waiting=false; gameActive=false;
+      clearTimers(); resetLights(); updateAll(); saveLocal();
+      message.textContent='資料已清除。';
+    });
+    shareBtn.addEventListener('click', ()=>{
+      const {w,h} = parseSize(shareSizeSel.value);
+      const node = buildShareCard({w,h});
+      const nickname = nicknameInput.value || '玩家';
+      downloadCard(node, `${nickname}_reaction_${w}x${h}.png`, {w,h});
+    });
+
+    document.body.addEventListener('keydown', e=>{
+      if (e.code !== 'Space') return;
+      if (waiting) return endGame();
+      if (gameActive) return falseStart();
+    });
+    document.body.addEventListener('click', e=>{
+      if (clickIsControl(e.target)) return;
+      if (waiting) return endGame();
+      if (gameActive) return falseStart();
+    });
+
+    // ======== 初始化 ========
+    loadLocal();
+    createLights();
+    updateAll();
+    updateRankList();
+  </script>
+</body>
+</html>
 

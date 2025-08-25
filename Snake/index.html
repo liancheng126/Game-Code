@@ -16,83 +16,77 @@
       --muted: #9aa3b2;
     }
     * { box-sizing: border-box; }
-    html, body { height: 100%; }
+    html, body { height: 100%; overscroll-behavior: none; }
     body {
       margin: 0; background: radial-gradient(1200px 800px at 10% 10%, #151936 0%, var(--bg) 45%),
                   radial-gradient(1000px 800px at 90% 10%, #182042 0%, var(--bg) 50%),
                   var(--bg);
       color: var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Noto Sans TC, Helvetica, Arial, sans-serif;
-      display: grid; place-items: center; padding: 20px;
+      display: grid; place-items: center; padding: 12px; min-height: 100dvh; overflow: hidden;
     }
     .card {
       width: min(94vw, 900px);
+      height: calc(100dvh - 24px);
+      max-height: 860px;
       background: linear-gradient(180deg, #161c38 0%, #0e1330 100%);
       border: 1px solid #1e2449; border-radius: 20px;
       box-shadow: 0 10px 30px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.04);
-      padding: 18px; position: relative;
+      padding: 14px; position: relative; overflow: hidden;
     }
     header {
-      display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
-      padding: 6px 6px 14px; border-bottom: 1px dashed #26305e;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;
+      padding: 2px 4px 10px; border-bottom: 1px dashed #26305e;
     }
-    h1 { font-size: 20px; margin: 0; letter-spacing: .5px; }
+    h1 { font-size: 18px; margin: 0; letter-spacing: .5px; }
     .credit { font-size: 12px; color: var(--muted); }
-    .stats { display: flex; gap: 10px; align-items: center; }
-    .pill { background: #101535; border: 1px solid #2a376d; color: var(--text); padding: 8px 10px; border-radius: 999px; font-size: 13px; min-width: 98px; text-align: center; }
+    .stats { display: flex; gap: 8px; align-items: center; }
+    .pill { background: #101535; border: 1px solid #2a376d; color: var(--text); padding: 6px 10px; border-radius: 999px; font-size: 12px; min-width: 92px; text-align: center; }
     .pill strong { color: var(--accent); }
-    .controls { display: flex; gap: 8px; flex-wrap: wrap; }
+    .controls { display: flex; gap: 6px; flex-wrap: wrap; }
     button {
       appearance: none; border: 1px solid #2a376d; background: #0e1433; color: var(--text); cursor: pointer;
-      padding: 8px 12px; border-radius: 10px; font-weight: 600; letter-spacing: .2px; font-size: 14px;
+      padding: 8px 10px; border-radius: 10px; font-weight: 600; letter-spacing: .2px; font-size: 13px;
       transition: transform .08s ease, background .2s ease, border-color .2s ease;
     }
     button:hover { background: #111a44; }
     button:active { transform: translateY(1px); }
     .primary { border-color: #2b6f66; background: linear-gradient(180deg, #0c2b27, #0b1f1d); }
     .danger { border-color: #5a2634; background: linear-gradient(180deg, #2b0c16, #1d0b11); }
-    .wrap { display: grid; grid-template-columns: 1fr; gap: 14px; padding-top: 14px; }
-    .board {
-      position: relative; width: 100%; aspect-ratio: 1/1; background: #0b102a; border-radius: 16px; overflow: hidden;
-      border: 1px solid #1b2348; box-shadow: inset 0 0 0 1px rgba(255,255,255,.03);
-    }
-    canvas { width: 100%; height: 100%; display: block; }
+
+    .wrap { display: grid; grid-template-rows: 1fr auto; grid-template-columns: 1fr; gap: 10px; padding-top: 10px; height: calc(100% - 70px); }
+    .board { position: relative; width: 100%; height: 100%; max-height: 100%; background: #0b102a; border-radius: 16px; overflow: hidden; border: 1px solid #1b2348; box-shadow: inset 0 0 0 1px rgba(255,255,255,.03); }
+    .board::before { content: ""; display: block; padding-bottom: 100%; } /* keep square space */
+    canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
     .overlay {
       position: absolute; inset: 0; display: none; align-items: center; justify-content: center; flex-direction: column;
       background: radial-gradient(400px 300px at 50% 40%, rgba(20,25,60,.7), rgba(10,14,35,.85));
       color: var(--text); text-align: center; padding: 24px; gap: 14px; cursor: pointer;
+      touch-action: manipulation;
     }
     .overlay.show { display: flex; }
-    .overlay h2 { margin: 0; font-size: 24px; }
+    .overlay h2 { margin: 0; font-size: 22px; }
     .hint { font-size: 12px; color: var(--muted); }
 
     /* Glow Joystick */
-    .joystick { position: relative; margin: 14px auto 4px; width: 140px; height: 140px; border-radius: 50%;
+    .joystick { position: fixed; right: 16px; bottom: max(16px, env(safe-area-inset-bottom)); width: 132px; height: 132px; border-radius: 50%;
       background: radial-gradient(60% 60% at 50% 45%, #10183e 0%, #0c1333 60%, #0a0f2c 100%);
       border: 2px solid #2a376d; box-shadow: 0 0 25px rgba(106,168,255,.25), inset 0 0 18px rgba(92,242,166,.12);
-      touch-action: none; user-select: none; overflow: visible;
+      touch-action: none; user-select: none; overflow: visible; z-index: 20;
     }
-    .joystick::before { /* outer glow ring */
-      content: ""; position: absolute; inset: -6px; border-radius: 50%;
-      background: conic-gradient(from 0deg, rgba(106,168,255,.0), rgba(106,168,255,.45), rgba(92,242,166,.45), rgba(106,168,255,.0));
-      filter: blur(10px); opacity: .8; pointer-events: none;
-    }
-    .stick {
-      position: absolute; left: 50%; top: 50%; width: 68px; height: 68px; border-radius: 50%;
-      transform: translate(-50%, -50%);
-      background: radial-gradient(70% 70% at 40% 35%, #7bf7bf 0%, #5cf2a6 40%, #39c18a 100%);
-      box-shadow: 0 0 22px rgba(92,242,166,.65), inset 0 8px 16px rgba(255,255,255,.2);
-      border: 2px solid rgba(92,242,166,.7);
-      transition: transform .05s linear;
-      pointer-events: none;
-    }
+    .joystick::before { content: ""; position: absolute; inset: -6px; border-radius: 50%; background: conic-gradient(from 0deg, rgba(106,168,255,.0), rgba(106,168,255,.45), rgba(92,242,166,.45), rgba(106,168,255,.0)); filter: blur(10px); opacity: .8; pointer-events: none; }
+    .stick { position: absolute; left: 50%; top: 50%; width: 64px; height: 64px; border-radius: 50%; transform: translate(-50%, -50%);
+      background: radial-gradient(70% 70% at 40% 35%, #7bf7bf 0%, #5cf2a6 40%, #39c18a 100%); box-shadow: 0 0 22px rgba(92,242,166,.65), inset 0 8px 16px rgba(255,255,255,.2); border: 2px solid rgba(92,242,166,.7); transition: transform .05s linear; pointer-events: none; }
 
-    .side { padding: 8px; }
+    .side { padding: 0 6px 6px; }
     .meta { display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: 12px; padding: 0 6px; }
     .list { margin: 6px 6px 0; padding: 8px; border: 1px dashed #26305e; border-radius: 12px; font-size: 12px; color: var(--muted); }
     .list ol { margin: 6px 0 0 18px; }
 
     @media (min-width: 900px) {
-      .wrap { grid-template-columns: 1.1fr .9fr; align-items: start; }
+      .wrap { grid-template-columns: 1.1fr .9fr; grid-template-rows: auto 1fr; height: auto; }
+      .board { position: relative; }
+      .joystick { position: absolute; right: 18px; bottom: 18px; }
     }
   </style>
 </head>
@@ -119,7 +113,7 @@
         <canvas id="game" width="600" height="600" aria-label="遊戲畫布"></canvas>
         <div id="overlay" class="overlay" role="dialog" aria-live="polite">
           <h2 id="overlayTitle">點這裡或按「開始」開始遊戲</h2>
-          <div class="hint">操作：方向鍵 / WASD / 右側發光搖桿</div>
+          <div class="hint">操作：方向鍵 / WASD / 右下角發光搖桿</div>
           <div>
             <button id="resumeBtn" class="primary">開始</button>
             <button id="againBtn">重玩</button>
@@ -127,10 +121,6 @@
         </div>
       </div>
       <aside class="side">
-        <div class="meta">手機搖桿（推拉控制方向）</div>
-        <div class="joystick" id="joystick">
-          <div class="stick" id="stick"></div>
-        </div>
         <div class="list">
           高分紀錄（前五）
           <ol id="lb"></ol>
@@ -143,10 +133,12 @@
     </div>
   </div>
 
+  <!-- 浮動搖桿（移出 board，以避免手勢越界導致頁面滾動） -->
+  <div class="joystick" id="joystick"><div class="stick" id="stick"></div></div>
+
   <script>
     ;(() => {
       'use strict'
-      // ======= DOM =======
       const canvas = document.getElementById('game')
       const ctx = canvas.getContext('2d', { alpha: false })
       const scoreEl = document.getElementById('score')
@@ -164,242 +156,113 @@
 
       const DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1))
 
-      // ======= Config =======
-      const COLS = 20
-      const ROWS = 20
-      const SPEED_BASE = 7
-      const SPEED_INC = 0.3
-      const SPEED_CAP = 20
-      const BG = '#0b102a'
-      const GRID = '#13193a'
-      const SNAKE_HEAD = '#5cf2a6'
-      const SNAKE_BODY = '#72f9b6'
-      const FOOD = '#6aa8ff'
+      // Config
+      const COLS = 20, ROWS = 20
+      const SPEED_BASE = 7, SPEED_INC = 0.3, SPEED_CAP = 20
+      const BG = '#0b102a', GRID = '#13193a', SNAKE_HEAD = '#5cf2a6', SNAKE_BODY = '#72f9b6', FOOD = '#6aa8ff'
 
-      // ======= Storage (safe) =======
-      const memStore = {}
-      function sget(k, d){ try { const v = localStorage.getItem(k); return v==null?d:v } catch { return memStore[k]??d } }
-      function sset(k, v){ try { localStorage.setItem(k, v) } catch { memStore[k]=v } }
+      // Safe storage
+      const mem = {}
+      const sget = (k,d)=>{ try { const v=localStorage.getItem(k); return v==null?d:v } catch { return mem[k]??d } }
+      const sset = (k,v)=>{ try { localStorage.setItem(k,v) } catch { mem[k]=v } }
 
-      // ======= Canvas fit =======
-      function fitCanvas() {
-        const size = Math.min(canvas.clientWidth, canvas.clientHeight)
-        if (!size) return
-        const w = (size|0) * DPR, h = (size|0) * DPR
-        if (canvas.width !== w || canvas.height !== h) {
-          canvas.width = w; canvas.height = h
-          ctx.setTransform(DPR, 0, 0, DPR, 0, 0)
-        }
+      // Fit canvas
+      function fitCanvas(){
+        const square = Math.min(canvas.clientWidth, canvas.clientHeight)
+        if (!square) return
+        const w = square*DPR|0, h = square*DPR|0
+        if (canvas.width!==w || canvas.height!==h){ canvas.width=w; canvas.height=h; ctx.setTransform(DPR,0,0,DPR,0,0) }
       }
-      const ro = new ResizeObserver(fitCanvas)
-      ro.observe(canvas)
-      window.addEventListener('resize', fitCanvas)
-      fitCanvas()
+      const ro = new ResizeObserver(fitCanvas); ro.observe(canvas); window.addEventListener('resize', fitCanvas); fitCanvas()
 
-      // ======= Leaderboard =======
-      function loadLB(){ try { return JSON.parse(sget('snake_lb','[]')) } catch { return [] } }
-      function saveLB(arr){ sset('snake_lb', JSON.stringify(arr)) }
-      function addToLB(sc){ const arr = loadLB(); arr.push({score:sc, ts:Date.now()}); arr.sort((a,b)=>b.score-a.score); saveLB(arr.slice(0,20)) }
-      function renderLB(){ const arr = loadLB().slice(0,5); lbEl.innerHTML = arr.map(e=>`<li>${e.score} 分 · <span style="opacity:.7">${new Date(e.ts).toLocaleString()}</span></li>`).join('') }
+      // Leaderboard
+      const loadLB=()=>{ try { return JSON.parse(sget('snake_lb','[]')) } catch { return [] } }
+      const saveLB=a=>sset('snake_lb', JSON.stringify(a))
+      const addToLB=sc=>{ const a=loadLB(); a.push({score:sc,ts:Date.now()}); a.sort((x,y)=>y.score-x.score); saveLB(a.slice(0,20)) }
+      const renderLB=()=>{ const a=loadLB().slice(0,5); lbEl.innerHTML=a.map(e=>`<li>${e.score} 分 · <span style="opacity:.7">${new Date(e.ts).toLocaleString()}</span></li>`).join('') }
 
-      // ======= State Machine =======
-      const State = { idle:'idle', running:'running', paused:'paused', dead:'dead' }
-      let state = State.idle
-      let snake, dir, nextDir, food, score, best, speed
-      let last = 0, acc = 0
+      // State
+      const State={ idle:'idle', running:'running', paused:'paused', dead:'dead' }
+      let state=State.idle, snake, dir, nextDir, food, score, best, speed
+      let last=0, acc=0
 
-      function setState(next){ state = next; updateUI() }
-
+      function setState(ns){ state=ns; updateUI() }
       function updateUI(){
-        // Button text
-        if (state === State.running) startBtn.textContent = '暫停'
-        else if (state === State.paused) startBtn.textContent = '繼續'
-        else startBtn.textContent = '開始'
-        // Overlay
-        if (state === State.idle) { overlayTitle.textContent = '點這裡或按「開始」開始遊戲'; overlay.classList.add('show') }
-        else if (state === State.paused) { overlayTitle.textContent = '已暫停（點擊空白處繼續）'; overlay.classList.add('show') }
-        else if (state === State.dead) { overlayTitle.textContent = `遊戲結束！分數：${score}（點擊空白處繼續）`; overlay.classList.add('show') }
+        startBtn.textContent = state===State.running? '暫停' : state===State.paused? '繼續' : '開始'
+        if (state===State.idle){ overlayTitle.textContent='點這裡或按「開始」開始遊戲'; overlay.classList.add('show') }
+        else if (state===State.paused){ overlayTitle.textContent='已暫停（點擊空白處繼續）'; overlay.classList.add('show') }
+        else if (state===State.dead){ overlayTitle.textContent=`遊戲結束！分數：${score}（點擊空白處繼續）`; overlay.classList.add('show') }
         else overlay.classList.remove('show')
       }
 
       function reset(){
-        snake = [ {x:8,y:10}, {x:7,y:10}, {x:6,y:10} ]
-        dir = {x:1,y:0}; nextDir = {x:1,y:0}
-        score = 0; speed = SPEED_BASE
-        placeFood(); last = 0; acc = 0
-        best = Math.max(Number(sget('snake_best',0)), 0)
-        scoreEl.textContent = '0'; bestEl.textContent = best
+        snake=[{x:8,y:10},{x:7,y:10},{x:6,y:10}]
+        dir={x:1,y:0}; nextDir={x:1,y:0}
+        score=0; speed=SPEED_BASE; placeFood(); last=0; acc=0
+        best=Math.max(Number(sget('snake_best',0)),0); scoreEl.textContent='0'; bestEl.textContent=best
       }
+      function hardReset(){ reset(); setState(State.idle); step() }
+      function updateScore(){ scoreEl.textContent=score; if (score>best){ best=score; sset('snake_best', String(best)); bestEl.textContent=best } }
+      function placeFood(){ const set=new Set(snake.map(s=>s.x+':'+s.y)); let x,y; do{ x=(Math.random()*COLS)|0; y=(Math.random()*ROWS)|0 }while(set.has(x+':'+y)); food={x,y} }
 
-      function hardReset(){ reset(); setState(State.idle); step(0) }
+      // Render
+      function drawGrid(w,h,cell){ ctx.fillStyle=BG; ctx.fillRect(0,0,w,h); ctx.strokeStyle=GRID; ctx.lineWidth=1; for(let x=0;x<=w;x+=cell){ ctx.beginPath(); ctx.moveTo(x+0.5,0); ctx.lineTo(x+0.5,h); ctx.stroke() } for(let y=0;y<=h;y+=cell){ ctx.beginPath(); ctx.moveTo(0,y+0.5); ctx.lineTo(w,y+0.5); ctx.stroke() } }
+      function drawCell(x,y,cell,color){ const pad=Math.max(1,(cell*0.12)|0); ctx.fillStyle=color; ctx.fillRect(x*cell+pad,y*cell+pad,cell-pad*2,cell-pad*2) }
+      function step(){ const w=canvas.width/DPR,h=canvas.height/DPR,cell=Math.floor(Math.min(w/COLS,h/ROWS)),bw=cell*COLS,bh=cell*ROWS; ctx.save(); ctx.translate((w-bw)/2,(h-bh)/2); drawGrid(bw,bh,cell); drawCell(food.x,food.y,cell,FOOD); for(let i=0;i<snake.length;i++){ const s=snake[i]; drawCell(s.x,s.y,cell,i?SNAKE_BODY:SNAKE_HEAD) } ctx.restore() }
 
-      function updateScore(){
-        scoreEl.textContent = score
-        if (score > best) { best = score; sset('snake_best', String(best)); bestEl.textContent = best }
-      }
-
-      function placeFood(){
-        const body = new Set(snake.map(s=>s.x+':'+s.y))
-        let x, y; do { x = (Math.random()*COLS)|0; y = (Math.random()*ROWS)|0 } while(body.has(x+':'+y))
-        food = {x,y}
-      }
-
-      // ======= Render =======
-      function drawGrid(w, h, cell){
-        ctx.fillStyle = BG; ctx.fillRect(0,0,w,h)
-        ctx.strokeStyle = GRID; ctx.lineWidth = 1
-        for (let x=0; x<=w; x+=cell){ ctx.beginPath(); ctx.moveTo(x+0.5,0); ctx.lineTo(x+0.5,h); ctx.stroke() }
-        for (let y=0; y<=h; y+=cell){ ctx.beginPath(); ctx.moveTo(0,y+0.5); ctx.lineTo(w,y+0.5); ctx.stroke() }
-      }
-      function drawCell(x,y,cell,color){ const pad = Math.max(1, (cell*0.12)|0); ctx.fillStyle=color; ctx.fillRect(x*cell+pad, y*cell+pad, cell-pad*2, cell-pad*2) }
-
-      function step(){
-        const w = canvas.width / DPR, h = canvas.height / DPR
-        const cell = Math.floor(Math.min(w/COLS, h/ROWS))
-        const bw = cell*COLS, bh = cell*ROWS
-        ctx.save(); ctx.translate((w-bw)/2, (h-bh)/2)
-        drawGrid(bw,bh,cell)
-        drawCell(food.x, food.y, cell, FOOD)
-        for (let i=0;i<snake.length;i++){ const s=snake[i]; drawCell(s.x,s.y,cell, i? SNAKE_BODY:SNAKE_HEAD) }
-        ctx.restore()
-      }
-
-      // ======= Game Loop =======
-      function loop(ts){
-        if (state !== State.running) return
-        if (!last) last = ts
-        let delta = (ts - last) / 1000; last = ts
-        // Clamp delta to avoid huge leaps after tab inactive
-        if (delta > 0.25) delta = 0.25
-        acc += delta
-        const stepTime = 1 / Math.min(speed, SPEED_CAP)
-        let guards = 0
-        while (acc >= stepTime && guards < 8){ tick(); acc -= stepTime; guards++ }
-        step()
-        requestAnimationFrame(loop)
-      }
-
-      function tick(){
-        // apply nextDir (no immediate reverse)
-        if (!(nextDir.x === -dir.x && nextDir.y === -dir.y)) dir = nextDir
-        const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y }
-        // collision
-        if (head.x<0 || head.x>=COLS || head.y<0 || head.y>=ROWS || snake.some(s=>s.x===head.x && s.y===head.y)) return die()
-        snake.unshift(head)
-        if (head.x===food.x && head.y===food.y){ score++; speed += SPEED_INC; updateScore(); placeFood() } else { snake.pop() }
-      }
-
+      // Loop
+      function loop(ts){ if(state!==State.running) return; if(!last) last=ts; let dt=(ts-last)/1000; last=ts; if(dt>0.25) dt=0.25; acc+=dt; const stepTime=1/Math.min(speed,SPEED_CAP); let guard=0; while(acc>=stepTime && guard<8){ tick(); acc-=stepTime; guard++ } step(); requestAnimationFrame(loop) }
+      function tick(){ if(!(nextDir.x===-dir.x && nextDir.y===-dir.y)) dir=nextDir; const head={x:snake[0].x+dir.x, y:snake[0].y+dir.y}; if(head.x<0||head.x>=COLS||head.y<0||head.y>=ROWS||snake.some(s=>s.x===head.x&&s.y===head.y)) return die(); snake.unshift(head); if(head.x===food.x&&head.y===food.y){ score++; speed+=SPEED_INC; updateScore(); placeFood() } else snake.pop() }
       function die(){ setState(State.dead); addToLB(score); renderLB() }
 
-      // ======= Controls =======
-      function startGame(){ if (state === State.idle){ hideOverlay(); setState(State.running); last=0; acc=0; requestAnimationFrame(loop) } }
-      function resumeGame(){ if (state === State.paused){ hideOverlay(); setState(State.running); last=0; requestAnimationFrame(loop) } }
-      function pauseGame(){ if (state === State.running){ setState(State.paused) } }
-      function hideOverlay(){ overlay.classList.remove('show') }
+      // Controls
+      function startGame(){ if(state===State.idle){ overlay.classList.remove('show'); setState(State.running); last=0; acc=0; requestAnimationFrame(loop) } }
+      function resumeGame(){ if(state===State.paused){ overlay.classList.remove('show'); setState(State.running); last=0; requestAnimationFrame(loop) } }
+      function pauseGame(){ if(state===State.running){ setState(State.paused) } }
+      function handleStartClick(){ if(state===State.running) return pauseGame(); if(state===State.idle) return startGame(); if(state===State.paused) return resumeGame(); if(state===State.dead){ reset(); return startGame() } }
 
-      function handleStartClick(){
-        if (state === State.running) return pauseGame()
-        if (state === State.idle){ return startGame() }
-        if (state === State.paused){ return resumeGame() }
-        if (state === State.dead){ reset(); return startGame() }
-      }
+      const keyMap={ ArrowUp:{x:0,y:-1}, KeyW:{x:0,y:-1}, ArrowDown:{x:0,y:1}, KeyS:{x:0,y:1}, ArrowLeft:{x:-1,y:0}, KeyA:{x:-1,y:0}, ArrowRight:{x:1,y:0}, KeyD:{x:1,y:0} }
+      window.addEventListener('keydown', e=>{ const c=e.code; if(keyMap[c]){ e.preventDefault(); nextDir=keyMap[c] } else if(c==='Space'||c==='Enter'){ e.preventDefault(); handleStartClick() } }, {passive:false})
 
-      // Keyboard
-      const keyMap = { ArrowUp:{x:0,y:-1}, KeyW:{x:0,y:-1}, ArrowDown:{x:0,y:1}, KeyS:{x:0,y:1}, ArrowLeft:{x:-1,y:0}, KeyA:{x:-1,y:0}, ArrowRight:{x:1,y:0}, KeyD:{x:1,y:0} }
-      window.addEventListener('keydown', e => {
-        const c = e.code
-        if (keyMap[c]){ e.preventDefault(); nextDir = keyMap[c] }
-        else if (c==='Space' || c==='Enter'){ e.preventDefault(); handleStartClick() }
-      }, {passive:false})
+      overlay.addEventListener('click', e=>{ if(e.target===overlay){ if(state===State.idle) startGame(); else if(state===State.paused) resumeGame(); else if(state===State.dead){ reset(); startGame() } } })
+      resumeBtn.addEventListener('click', e=>{ e.stopPropagation(); handleStartClick() })
+      againBtn.addEventListener('click', e=>{ e.stopPropagation(); hardReset(); startGame() })
+      startBtn.addEventListener('click', e=>{ e.preventDefault(); handleStartClick() })
+      restartBtn.addEventListener('click', e=>{ e.preventDefault(); hardReset() })
+      canvas.addEventListener('pointerdown', ()=>{ if(state!==State.running) handleStartClick() })
+      document.addEventListener('visibilitychange', ()=>{ if(document.hidden) pauseGame() })
 
-      // Overlay clicks: only when clicking empty area
-      overlay.addEventListener('click', (e)=>{ if (e.target === overlay){ if (state===State.idle) startGame(); else if (state===State.paused) resumeGame(); else if (state===State.dead){ reset(); startGame() } } })
-      resumeBtn.addEventListener('click', (e)=>{ e.stopPropagation(); handleStartClick() })
-      againBtn.addEventListener('click', (e)=>{ e.stopPropagation(); hardReset(); startGame() })
-
-      // Header buttons
-      startBtn.addEventListener('click', (e)=>{ e.preventDefault(); handleStartClick() })
-      restartBtn.addEventListener('click', (e)=>{ e.preventDefault(); hardReset() })
-
-      // Start by tapping board
-      canvas.addEventListener('pointerdown', ()=>{ if (state!==State.running) handleStartClick() })
-
-      // Auto-pause on tab hidden
-      document.addEventListener('visibilitychange', ()=>{ if (document.hidden) pauseGame() })
-
-      // ======= Joystick =======
+      // Joystick — prevent page scroll while active
       let joyRect, centerX, centerY, radius, joyActive=false
-      function cacheJoy(){ joyRect = joystick.getBoundingClientRect(); centerX = joyRect.left + joyRect.width/2; centerY = joyRect.top + joyRect.height/2; radius = joyRect.width/2 - 6 }
+      function cacheJoy(){ const r=joystick.getBoundingClientRect(); joyRect=r; centerX=r.left+r.width/2; centerY=r.top+r.height/2; radius=r.width/2-6 }
       cacheJoy(); window.addEventListener('resize', cacheJoy)
 
-      function setStick(dx,dy){
-        const len = Math.hypot(dx,dy); const max = radius
-        const angle = len? Math.atan2(dy,dx):0
-        const r = Math.min(len, max)
-        const x = r*Math.cos(angle), y = r*Math.sin(angle)
-        stick.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`
-        if (Math.abs(dx) > Math.abs(dy)) nextDir = {x: dx>0?1:-1, y:0}
-        else if (Math.abs(dy) > Math.abs(dx)) nextDir = {x:0, y: dy>0?1:-1}
-      }
-      function resetStick(){ stick.style.transform = 'translate(-50%, -50%)' }
+      function setStick(dx,dy){ const len=Math.hypot(dx,dy), max=radius, ang=len?Math.atan2(dy,dx):0, r=Math.min(len,max), x=r*Math.cos(ang), y=r*Math.sin(ang); stick.style.transform=`translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`; if(Math.abs(dx)>Math.abs(dy)) nextDir={x:dx>0?1:-1,y:0}; else if(Math.abs(dy)>Math.abs(dx)) nextDir={x:0,y:dy>0?1:-1} }
+      const resetStick=()=>{ stick.style.transform='translate(-50%, -50%)' }
+      const joyDown=(x,y)=>{ joyActive=true; cacheJoy(); setStick(x-centerX,y-centerY); if(state!==State.running) handleStartClick() }
+      const joyMove=(x,y)=>{ if(joyActive) setStick(x-centerX,y-centerY) }
+      const joyUp=()=>{ joyActive=false; resetStick() }
 
-      function joyDown(x,y){ joyActive=true; cacheJoy(); setStick(x-centerX, y-centerY); if (state!==State.running) handleStartClick() }
-      function joyMove(x,y){ if (joyActive) setStick(x-centerX, y-centerY) }
-      function joyUp(){ joyActive=false; resetStick() }
-
-      // Pointer & touch (for broader compat)
-      joystick.addEventListener('pointerdown', e=>{ joystick.setPointerCapture(e.pointerId); joyDown(e.clientX,e.clientY) })
-      joystick.addEventListener('pointermove', e=>{ joyMove(e.clientX,e.clientY) })
+      joystick.addEventListener('pointerdown', e=>{ joystick.setPointerCapture?.(e.pointerId); joyDown(e.clientX,e.clientY) })
+      joystick.addEventListener('pointermove', e=>{ if(joyActive){ e.preventDefault(); joyMove(e.clientX,e.clientY) } }, {passive:false})
       joystick.addEventListener('pointerup', joyUp)
       joystick.addEventListener('pointercancel', joyUp)
       joystick.addEventListener('lostpointercapture', joyUp)
-      // Touch fallback (older iOS)
+      // Global touch guard: when搖桿啟用時阻止整頁滾動
+      window.addEventListener('touchmove', e=>{ if(joyActive) e.preventDefault() }, {passive:false})
       joystick.addEventListener('touchstart', e=>{ const t=e.touches[0]; joyDown(t.clientX,t.clientY) }, {passive:true})
-      joystick.addEventListener('touchmove', e=>{ const t=e.touches[0]; joyMove(t.clientX,t.clientY) }, {passive:true})
+      joystick.addEventListener('touchmove', e=>{ const t=e.touches[0]; if(joyActive){ e.preventDefault(); joyMove(t.clientX,t.clientY) } }, {passive:false})
       joystick.addEventListener('touchend', joyUp)
 
-      // ======= Share (1080x1920) =======
+      // Share
       function roundRect(g,x,y,w,h,r){ g.beginPath(); g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath() }
-      function drawShareCard(score, best){
-        const W=1080, H=1920; const c=document.createElement('canvas'); c.width=W; c.height=H; const g=c.getContext('2d')
-        const grad=g.createLinearGradient(0,0,0,H); grad.addColorStop(0,'#0e1330'); grad.addColorStop(.5,'#10183e'); grad.addColorStop(1,'#0b102a'); g.fillStyle=grad; g.fillRect(0,0,W,H)
-        g.globalAlpha=.35; g.fillStyle='#6aa8ff'; g.beginPath(); g.arc(200,300,260,0,Math.PI*2); g.fill(); g.fillStyle='#5cf2a6'; g.beginPath(); g.arc(900,620,320,0,Math.PI*2); g.fill(); g.globalAlpha=1
-        g.fillStyle='#e9edf8'; g.font='700 72px system-ui, Noto Sans TC'; g.fillText('Snake 貪吃蛇', 80, 160)
-        g.font='400 32px system-ui, Noto Sans TC'; g.fillStyle='#9aa3b2'; g.fillText('創作者：LIAN CHENG', 80, 210)
-        g.fillStyle='#101535'; g.strokeStyle='#2a376d'; g.lineWidth=4; const bx=80,by=270,bw=W-160,bh=420; roundRect(g,bx,by,bw,bh,28); g.fill(); g.stroke()
-        g.font='600 44px system-ui, Noto Sans TC'; g.fillStyle='#9aa3b2'; g.fillText('本局分數', bx+40, by+80)
-        g.font='800 180px system-ui, Noto Sans TC'; g.fillStyle='#5cf2a6'; g.fillText(String(score), bx+40, by+260)
-        g.font='600 44px system-ui, Noto Sans TC'; g.fillStyle='#9aa3b2'; g.fillText('最佳紀錄', bx+40, by+340)
-        g.font='800 80px system-ui, Noto Sans TC'; g.fillStyle='#6aa8ff'; g.fillText(String(best), bx+260, by+340)
-        g.globalAlpha=.85; g.fillStyle='#9aa3b2'; g.font='400 32px system-ui, Noto Sans TC'; g.fillText(new Date().toLocaleString(), 80, H-120); g.globalAlpha=1
-        return c
-      }
+      function drawShareCard(score,best){ const W=1080,H=1920,c=document.createElement('canvas'); c.width=W; c.height=H; const g=c.getContext('2d'); const grad=g.createLinearGradient(0,0,0,H); grad.addColorStop(0,'#0e1330'); grad.addColorStop(.5,'#10183e'); grad.addColorStop(1,'#0b102a'); g.fillStyle=grad; g.fillRect(0,0,W,H); g.globalAlpha=.35; g.fillStyle='#6aa8ff'; g.beginPath(); g.arc(200,300,260,0,Math.PI*2); g.fill(); g.fillStyle='#5cf2a6'; g.beginPath(); g.arc(900,620,320,0,Math.PI*2); g.fill(); g.globalAlpha=1; g.fillStyle='#e9edf8'; g.font='700 72px system-ui, Noto Sans TC'; g.fillText('Snake 貪吃蛇',80,160); g.font='400 32px system-ui, Noto Sans TC'; g.fillStyle='#9aa3b2'; g.fillText('創作者：LIAN CHENG',80,210); g.fillStyle='#101535'; g.strokeStyle='#2a376d'; g.lineWidth=4; const bx=80,by=270,bw=W-160,bh=420; roundRect(g,bx,by,bw,bh,28); g.fill(); g.stroke(); g.font='600 44px system-ui, Noto Sans TC'; g.fillStyle='#9aa3b2'; g.fillText('本局分數',bx+40,by+80); g.font='800 180px system-ui, Noto Sans TC'; g.fillStyle='#5cf2a6'; g.fillText(String(score),bx+40,by+260); g.font='600 44px system-ui, Noto Sans TC'; g.fillStyle='#9aa3b2'; g.fillText('最佳紀錄',bx+40,by+340); g.font='800 80px system-ui, Noto Sans TC'; g.fillStyle='#6aa8ff'; g.fillText(String(best),bx+260,by+340); g.globalAlpha=.85; g.fillStyle='#9aa3b2'; g.font='400 32px system-ui, Noto Sans TC'; g.fillText(new Date().toLocaleString(),80,H-120); g.globalAlpha=1; return c }
+      async function shareCurrentScore(){ const card=drawShareCard(score,best); if(navigator.canShare&&navigator.share&&card.toBlob){ await new Promise(res=>card.toBlob(res,'image/png')).then(async blob=>{ if(!blob) throw 0; const file=new File([blob],`snake_${score}.png`,{type:'image/png'}); if(navigator.canShare({files:[file]})) return navigator.share({files:[file],title:'Snake 貪吃蛇 成績',text:`我在 Snake 得到 ${score} 分！最佳 ${best} 分。`}); const url=URL.createObjectURL(blob); window.open(url,'_blank') }).catch(()=>{ const url=card.toDataURL('image/png'); const a=document.createElement('a'); a.href=url; a.download=`snake_${score}.png`; a.click() }) } else { const url=card.toDataURL('image/png'); const a=document.createElement('a'); a.href=url; a.download=`snake_${score}.png`; a.click() } }
+      shareBtn.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); shareCurrentScore() })
 
-      async function shareCurrentScore(){
-        const card = drawShareCard(score, best)
-        if (navigator.canShare && navigator.share && card.toBlob){
-          await new Promise(res=>card.toBlob(res,'image/png'))
-            .then(async blob=>{
-              if (!blob) throw new Error('blob failed')
-              const file = new File([blob], `snake_${score}.png`, {type:'image/png'})
-              if (navigator.canShare({ files:[file] })) return navigator.share({ files:[file], title:'Snake 貪吃蛇 成績', text:`我在 Snake 得到 ${score} 分！最佳 ${best} 分。` })
-              const url = URL.createObjectURL(blob); window.open(url,'_blank')
-            })
-            .catch(()=>{ const url = card.toDataURL('image/png'); const a=document.createElement('a'); a.href=url; a.download=`snake_${score}.png`; a.click() })
-        } else {
-          const url = card.toDataURL('image/png'); const a=document.createElement('a'); a.href=url; a.download=`snake_${score}.png`; a.click()
-        }
-      }
-
-      shareBtn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); shareCurrentScore() })
-
-      // ======= Boot =======
+      // Boot
       function init(){ hardReset(); renderLB(); overlay.classList.add('show') }
-      function boot(){ init() }
-      boot()
-
-      // Initial paint
-      step()
+      init(); step()
     })()
   </script>
 </body>
